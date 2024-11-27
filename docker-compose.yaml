@@ -1,0 +1,10 @@
+services:
+  flex-bison:
+    image: debian:bookworm
+    container_name: flex_bison_env
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./src:/src
+    working_dir: /src
+    command: ["/bin/bash", "-c", "apt update && apt install -y flex bison && tail -f /dev/null"]

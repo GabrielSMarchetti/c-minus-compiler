@@ -1,19 +1,19 @@
 %option noyywrap
 %{
+#include "parser.tab.h"  
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+#include "globals.h"
 
-int line_number = 1;
+extern int cur_line_number;
 
 %}
 
-/* Definir expressões regulares */
 letter          [a-zA-Z]
 digit           [0-9]
 identifier      {letter}+
 number          {digit}+
 
-/* Definir tokens */
 %%
 "if"            { return IF; }
 "else"          { return ELSE; }
@@ -21,12 +21,10 @@ number          {digit}+
 "return"        { return RETURN; }
 "int"           { return INT; }
 "void"          { return VOID; }
-
 "+"             { return PLUS; }
 "-"             { return MINUS; }
 "*"             { return MULT; }
 "/"             { return DIV; }
-
 "="             { return ASSIGN; }
 "=="            { return EQ; }
 "<"             { return LT; }
@@ -34,7 +32,6 @@ number          {digit}+
 ">"             { return GT; }
 ">="            { return GE; }
 "!="            { return NEQ; }
-
 "("             { return LPAREN; }
 ")"             { return RPAREN; }
 "{"             { return LBRACE; }
@@ -47,7 +44,7 @@ number          {digit}+
 {identifier}    { return ID; }
 {number}        { return NUMBER; }
 
-"//".*          { /* Ignorar o comentário de linha única */ }
+"//".*          {}
 
 "/*"            {
 		    char c;
@@ -55,31 +52,26 @@ number          {digit}+
 			    c = input();
 			    if (c == '*') { 
 			        c = input();
-			        if (c == '/') break; // Fechar o comentário
+			        if (c == '/') break;
 			    } else if (c == '\n') {
-			        line_number++;
-			    } else if (c == 0) { // EOF dentro do comentário
-			        return ERROR;  // Retorna um token de erro para o parser
+			        cur_line_number++;
+			    } else if (c == 0) { 
+			        return ERROR;
 			    }
 		    }
 		}
 
-\n              { line_number++; }
+[\n\r]             { cur_line_number++; }
 
 
-[ \t]+          { /* Ignorar espaços e tabulações */ }
+[ \t]+          {}
 
 
-.               { return yytext; //retorna o caracter q deu erro conforme foi especificado}
+.               { return ERROR;}
 
 %%
 
-int main(void) {
-    yylex();  // Chama o lexer
-    return 0;
-}
-
 int get_token(void) {
-    return yylex();  // Função auxiliar para retornar tokens ao parser
+    return yylex();  // Chama o lexer
 }
 
